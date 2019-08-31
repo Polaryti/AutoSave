@@ -18,17 +18,19 @@ public class AutoSave extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Setting dafault config
-        this.getConfig().addDefault("interval", 10);
-        this.getConfig().addDefault("Broadcast.AutoSaveMessage", "- Saving worlds -");
+        // Configuration: times
+        this.getConfig().addDefault("Time.minutes.interval", 10);
+
+        // Configuration: broadcast modes
         this.getConfig().addDefault("Broadcast.SilentMode", false);
         this.getConfig().addDefault("Broadcast.ServerBroadcast", true);
         this.getConfig().addDefault("Broadcast.ConsoleLogging", true);
         this.getConfig().addDefault("Broadcast.BroadcastEachWorld", false);
         this.getConfig().addDefault("Broadcast.AdminOnlyBroadcast", false);
-        //this.getConfig().addDefault("Broadcast.AlertMessage", true);
-        
-        // Language
+        this.getConfig().addDefault("Broadcast.PreAlertMessage", true);
+
+        // Configuration: Language
+        this.getConfig().addDefault("Language.AutoSaveMessage", "- Saving worlds -");
         this.getConfig().addDefault("Language.PlayerMessage", "Saved...");
         this.getConfig().addDefault("Language.AdminMessage", "Saved...");
         this.getConfig().addDefault("Language.NoPermission", "You do not have permission");
@@ -40,7 +42,6 @@ public class AutoSave extends JavaPlugin {
         this.getConfig().addDefault("Language.ConfigReloaded", "AutoSave Config Reloaded");
         this.getConfig().addDefault("Language.AutosaveACTIVE", "AutoSave is ACTIVE");
         this.getConfig().addDefault("Language.AutosaveINACTIVE", "AutoSave is NOT ACTIVE");
-        //this.getConfig().addDefault("Language.AutosaveAlertMessage", "");
         this.getConfig().addDefault("Language.help.toggle", "- Toggle AutoSave");
         this.getConfig().addDefault("Language.help.status", "- Check AutoSave status");
         this.getConfig().addDefault("Language.help.save", "- Force AutoSave");
@@ -75,12 +76,13 @@ public class AutoSave extends JavaPlugin {
     }
 
     protected boolean AutoSaveMap() {
-        Boolean silentMode = this.getConfig().getBoolean("Broadcast.SilentMode");
-        Boolean serverBroadcast = this.getConfig().getBoolean("Broadcast.ServerBroadcast");
-        Boolean adminOnlyBroadcast = this.getConfig().getBoolean("Broadcast.AdminOnlyBroadcast");
-        Boolean consoleLogging = this.getConfig().getBoolean("Broadcast.ConsoleLogging");
-        Boolean broadcastEachWorld = this.getConfig().getBoolean("Broadcast.BroadcastEachWorld");
-        String AutoSaveMessage = this.getConfig().getString("Broadcast.AutoSaveMessage");
+        boolean silentMode = this.getConfig().getBoolean("Broadcast.SilentMode");
+        boolean serverBroadcast = this.getConfig().getBoolean("Broadcast.ServerBroadcast");
+        boolean adminOnlyBroadcast = this.getConfig().getBoolean("Broadcast.AdminOnlyBroadcast");
+        boolean consoleLogging = this.getConfig().getBoolean("Broadcast.ConsoleLogging");
+        boolean broadcastEachWorld = this.getConfig().getBoolean("Broadcast.BroadcastEachWorld");
+        String autoSaveMessage = this.getConfig().getString("Language.AutoSaveMessage");
+
         if (silentMode) {
             Bukkit.savePlayers();
             Bukkit.getWorlds().forEach((world) -> {
@@ -89,7 +91,7 @@ public class AutoSave extends JavaPlugin {
             return true;
         }
         if (consoleLogging && !serverBroadcast && !adminOnlyBroadcast) {
-            Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(AutoSaveMessage));
+            Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(autoSaveMessage));
             Bukkit.savePlayers();
             for (World world : Bukkit.getWorlds()) {
                 if (broadcastEachWorld) {
@@ -102,10 +104,10 @@ public class AutoSave extends JavaPlugin {
         }
         if (serverBroadcast) {
             if (consoleLogging) {
-                Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(AutoSaveMessage));
+                Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(autoSaveMessage));
             }
             for (Player online : Bukkit.getOnlinePlayers()) {
-                online.sendMessage(this.replaceColorMacros(AutoSaveMessage));
+                online.sendMessage(this.replaceColorMacros(autoSaveMessage));
             }
             Bukkit.savePlayers();
             for (World world : Bukkit.getWorlds()) {
@@ -124,13 +126,13 @@ public class AutoSave extends JavaPlugin {
         }
         if (adminOnlyBroadcast) {
             if (consoleLogging) {
-                Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(AutoSaveMessage));
+                Bukkit.getConsoleSender().sendMessage(this.replaceColorMacros(autoSaveMessage));
             }
             for (Player admin : Bukkit.getOnlinePlayers()) {
                 if (!admin.hasPermission("autosave.admin")) {
                     continue;
                 }
-                admin.sendMessage(this.replaceColorMacros(AutoSaveMessage));
+                admin.sendMessage(this.replaceColorMacros(autoSaveMessage));
             }
             Bukkit.savePlayers();
             for (World world : Bukkit.getWorlds()) {
@@ -157,7 +159,7 @@ public class AutoSave extends JavaPlugin {
             this.getLogger().info("AutoSave already running");
             return false;
         }
-        int Interval = this.getConfig().getInt("interval") * 1200;
+        int Interval = this.getConfig().getInt("Time.minutes.interval") * 1200;
         this.taskID = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Bukkit.getServer().getPluginManager().getPlugin("AutoSave"), () -> {
             AutoSave.this.AutoSaveMap();
         }, (long) Interval, (long) Interval);
